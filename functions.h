@@ -1,5 +1,10 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <iostream>
+#include <SFML/Graphics.hpp>
+
 // global variables
 int WINDOW_WIDTH = 400;
 int WINDOW_HEIGHT = 400;
@@ -14,6 +19,9 @@ class MyShapes;
 class XYCoordinates;
 void displayBezier(sf::RenderWindow& window, std::vector<XYCoordinates> controlPoints, int lineResolutionPoints);
 int binomialCoefficient(int n, int k);
+void drawLineOnCoordinates(sf::RenderWindow& window, sf::Vector2f XYCoordinate1, sf::Vector2f XYCoordinate2, float thickness);
+
+
 
 void drawAll(sf::RenderWindow& window)
 {
@@ -21,8 +29,9 @@ void drawAll(sf::RenderWindow& window)
     
     window.clear();
 
-    drawCircle(window);
-    
+    //drawCircle(window);
+	//drawLineOnCoordinates(window, sf::Vector2f(100, 0), sf::Vector2f(100, 200), 10.f);
+
     window.display();
 
     return;
@@ -112,8 +121,7 @@ void displayBezier(sf::RenderWindow& window, std::vector<XYCoordinates> controlP
 	// use the number of controlPoints to calculate which point lies where
 
 	std::vector<XYCoordinates> bezierCoordinates;
-	sf::
-	int nControlPoints = controlPoints.size();
+	int nControlPoints = (int)controlPoints.size();
 	int curveOrder = nControlPoints - 1;
 
 	//std::cout << "nControlPoints = " << nControlPoints << std::endl;
@@ -137,19 +145,18 @@ void displayBezier(sf::RenderWindow& window, std::vector<XYCoordinates> controlP
 		bezierCoordinates.push_back(coordinate);
 		for (int i = 0; i < nControlPoints; i++)
 		{
-			controlPointTermX = (float)binomialCoefficient(curveOrder, i) * pow(t, i) * pow(1 - t, curveOrder - i) * controlPoints[i].getX();
-			controlPointTermY = (float)binomialCoefficient(curveOrder, i) * pow(t, i) * pow(1 - t, curveOrder - i) * controlPoints[i].getY();
+			controlPointTermX = (float)(binomialCoefficient(curveOrder, i) * pow(t, i) * pow(1 - t, curveOrder - i) * controlPoints[i].getX());
+			controlPointTermY = (float)(binomialCoefficient(curveOrder, i) * pow(t, i) * pow(1 - t, curveOrder - i) * controlPoints[i].getY());
 			bezierCoordinates[tNumber].setX(bezierCoordinates[tNumber].getX() + controlPointTermX);
 			bezierCoordinates[tNumber].setY(bezierCoordinates[tNumber].getY() + controlPointTermY);
 		}
 
-		/*
+		
 		if (tNumber > 0)
 		{
-			
+			drawLineOnCoordinates
 		}
-		*/
-		sf::Vertex()
+		
 
 	}
 
@@ -170,13 +177,34 @@ int binomialCoefficient(int n, int k)
 //sf::RectangleShape line(sf::Vector2f(150, 5));
 //line.rotate(45);
 
-sf::RectangleShape thicklineShape(sf::Vector2f XYCoordinate1, sf::Vector2f XYCoordinate2, float thickness)
+
+void drawLineOnCoordinates(sf::RenderWindow& window, sf::Vector2f XYCoordinate1, sf::Vector2f XYCoordinate2, float thickness)
 {
-	float length = pow((XYCoordinate2.x - XYCoordinate1.x) ^ 2 + (XYCoordinate2.y - XYCoordinate1.y) ^ 2, 0.5);
+	float xDifference = XYCoordinate2.x - XYCoordinate1.x;
+	float yDIfference = XYCoordinate2.y - XYCoordinate1.y;
+	float length = (float) pow((xDifference * xDifference) + (yDIfference * yDIfference), 0.5);
 	
-	sf::RectangleShape thickLine( sf::Vector2f(100.f, 5.f), 5 );
+	sf::RectangleShape thickLine;
+	thickLine.setSize( sf::Vector2f(length, thickness) );
+	thickLine.setOrigin(sf::Vector2f(0, thickness / 2));
+	thickLine.setPosition(XYCoordinate1);
+	
+	float angle = 0.f;
 
-
-
-	return thickLine;
+	if (xDifference != 0)
+	{
+		angle = atan(yDIfference / xDifference); // atan() gives the angle in radians. 
+	}
+	if (xDifference == 0)
+	{
+		if (yDIfference > 0)
+			angle = (float)(+ M_PI / 2);
+		if (yDIfference < 0)
+			angle = (float)(-M_PI / 2);
+	}
+	
+	thickLine.setRotation((float)(angle * 180 / M_PI));
+	window.draw(thickLine);
 }
+
+

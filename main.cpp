@@ -1,10 +1,11 @@
-#include <SFML/Graphics.hpp>
+
 #include "functions.h"
 
-int main()
+
+int main(void)
 {
     sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-
+    
     while (window.isOpen())
     {
         sf::Event event;
@@ -14,9 +15,7 @@ int main()
                 window.close();
         }
 
-
         drawAll(window);
-        
     }
 
     return 0;
