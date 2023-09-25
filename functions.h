@@ -24,7 +24,7 @@ float atanFullRevolution(float xDifference, float yDifference);
 void drawPiecewiseBezier(sf::RenderWindow& window, std::vector<std::vector< sf::Vector2f > > controlPoints, int lineResolutionPoints, float thickness);
 sf::Vector2f mirrorAboutPoint(sf::Vector2f point, sf::Vector2f mirror);
 
-
+ 
 
 void drawAll(sf::RenderWindow& window)
 {
