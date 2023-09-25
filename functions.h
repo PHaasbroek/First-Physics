@@ -17,7 +17,7 @@ void printNothing();
 int randBetweenBounds(int lowerBound, int upperBound);
 class MyShapes;
 class XYCoordinates;
-void displayBezier(sf::RenderWindow& window, std::vector<sf::Vector2f> controlPoints, int lineResolutionPoints, float thickness);
+void drawBezier(sf::RenderWindow& window, std::vector<sf::Vector2f> controlPoints, int lineResolutionPoints, float thickness);
 int binomialCoefficient(int n, int k);
 void drawLineOnCoordinates(sf::RenderWindow& window, sf::Vector2f XYCoordinate1, sf::Vector2f XYCoordinate2, float thickness);
 
@@ -26,15 +26,7 @@ void drawAll(sf::RenderWindow& window)
 	window.clear();
 	// put all function here
 
-	std::vector<sf::Vector2f> controlPoints;
-	controlPoints.push_back(sf::Vector2f(0, 0));
-	controlPoints.push_back(sf::Vector2f(200, 0));
-	controlPoints.push_back(sf::Vector2f(200, 200));
-
-
 	
-	displayBezier(window, controlPoints, 100, 10);
-
     window.display();
 
     return;
@@ -116,7 +108,7 @@ private:
 };
 
 
-void displayBezier(sf::RenderWindow& window, std::vector<sf::Vector2f> controlPoints, int lineResolutionPoints, float thickness)
+void drawBezier(sf::RenderWindow& window, std::vector<sf::Vector2f> controlPoints, int lineResolutionPoints, float thickness)
 {
 	// bezierCoordinates is the coordinates that are given back to be printed to the screen. 
 	// control points are the points that control the 
