@@ -1,4 +1,3 @@
-
 #include "functions.h"
 
 
@@ -6,6 +5,8 @@ int main(void)
 {
     sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "SFML works!");
     
+    initiateProgram();
+
     while (window.isOpen())
     {
         sf::Event event;

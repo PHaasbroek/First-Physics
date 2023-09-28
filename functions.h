@@ -16,18 +16,83 @@ void drawCircle(sf::RenderWindow& window);
 void printNothing();
 int randBetweenBounds(int lowerBound, int upperBound);
 class MyShapes;
-class XYCoordinates;
 void drawBezier(sf::RenderWindow& window, std::vector<sf::Vector2f> controlPoints, int lineResolutionPoints, float thickness);
 int binomialCoefficient(int n, int k);
 void drawLineOnCoordinates(sf::RenderWindow& window, sf::Vector2f XYCoordinate1, sf::Vector2f XYCoordinate2, float thickness);
 float atanFullRevolution(float xDifference, float yDifference);
 void drawPiecewiseBezier(sf::RenderWindow& window, std::vector<std::vector< sf::Vector2f > > controlPoints, int lineResolutionPoints, float thickness);
-sf::Vector2f mirrorAboutPoint(sf::Vector2f point, sf::Vector2f mirror);
+sf::Vector2f mirrorAboutPoint(sf::Vector2f point, sf::Vector2f mirror); 
+//void drawPBCircle(sf::RenderWindow& window, sf::Vector2f centreOrigin, float radius);
+void testFunction();
+void initiateProgram();
+class PhysicsBall;
+float vectorDot(sf::Vector2f vector1, sf::Vector2f vector2);
+sf::Vector2f normaliseVector(sf::Vector2f vector);
+sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
+sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 
- 
+class PhysicsBall
+{
+public:
+	sf::CircleShape shape;
+
+	void setXVelcity(float velocityNew)
+	{
+		velocity.x = velocityNew;
+	}
+	void setYVelcity(float velocityNew)
+	{
+		velocity.y = velocityNew;
+	}
+
+	void setVelocity(sf::Vector2f velocityNew)
+	{
+		velocity = velocityNew;
+	}
+
+	void changeXVelocity(float changeVelocity)
+	{
+		velocity.x = velocity.x + changeVelocity;
+	}
+	void changeYVelocity(float changeVelocity)
+	{
+		velocity.y = velocity.y + changeVelocity;
+	}
+	float getXVelocity()
+	{
+		return velocity.x;
+	}
+	float getYVelocity()
+	{
+		return velocity.y;
+	}
+	void reflectVelocity(sf::Vector2f reflectionNormal)
+	{ // seems to work just fine!
+		reflectionNormal = normaliseVector(reflectionNormal);
+		velocity = velocity - scaleVector(scaleVector(reflectionNormal, vectorDot(velocity, reflectionNormal)), 2);
+		//std::cout << " reflect vector " << velocity.x << " " << velocity.y << std::endl;
+	}
+
+	void printVelocity()
+	{
+		std::cout << "x velocity = " << velocity.x << " y velocity = " << velocity.y << std::endl;
+	}
+
+	sf::Vector2f velocity = sf::Vector2f(0, 0); // x velocity and y velocity
+};
+
+
+void initiateProgram()
+{// functions that run only once
+	PhysicsBall ball;
+	ball.setVelocity(sf::Vector2f(0.f, 1.f));
+	ball.printVelocity();
+	ball.reflectVelocity(sf::Vector2f(0.5, 0.8));
+	ball.printVelocity();
+}
 
 void drawAll(sf::RenderWindow& window)
-{
+{	// functions that run as long as the window is open.
 	window.clear();
 	// put all function here
 
@@ -36,14 +101,16 @@ void drawAll(sf::RenderWindow& window)
 	//controlPoints.push_back(sf::Vector2f(200, 100));
 	//controlPoints.push_back(sf::Vector2f(300, 300));
 
-	std::vector<std::vector<sf::Vector2f>> controlPointsMatrix;
-	controlPointsMatrix.push_back({ sf::Vector2f(0, 0), sf::Vector2f(100, 100), sf::Vector2f(200, 200) , sf::Vector2f(200, 300) });
-	controlPointsMatrix.push_back({ sf::Vector2f(200, 300) , mirrorAboutPoint(controlPointsMatrix[0][2], controlPointsMatrix[0][3]), sf::Vector2f(300, 300)});
+	//std::vector<std::vector<sf::Vector2f>> controlPointsMatrix;
+	//controlPointsMatrix.push_back({ sf::Vector2f(0, 0), sf::Vector2f(100, 100), sf::Vector2f(200, 200) , sf::Vector2f(200, 300) });
+	//controlPointsMatrix.push_back({ sf::Vector2f(200, 300) , mirrorAboutPoint(controlPointsMatrix[0][2], controlPointsMatrix[0][3]), sf::Vector2f(300, 300)});
 
 	//drawBezier(window, controlPoints, 20, 5);
 	
-	drawPiecewiseBezier(window, controlPointsMatrix, 10, 5);
-    window.display();
+	//drawPiecewiseBezier(window, controlPointsMatrix, 10, 5);
+	//drawPBCircle(window, sf::Vector2f(0, 0), 50);
+
+	window.display();
 
     return;
 }
@@ -72,6 +139,7 @@ int randBetweenBounds(int lowerBound, int upperBound)
 	}
 }
 
+/*
 class MyShapes
 {
 public:
@@ -91,37 +159,6 @@ public:
 
 private:
 	sf::Vector2f velocity; // velocity is (X, Y). +X is to the right, +Y is down
-};
-
-/*
-class XYCoordinates
-{
-public:
-	void setX(float xPosition)
-	{
-		xCoordinate = xPosition;
-	}
-	void setY(float yPosition)
-	{
-		yCoordinate = yPosition;
-	}
-	void setXY(float xPosition, float yPosition)
-	{
-		xCoordinate = xPosition;
-		yCoordinate = yPosition;
-	}
-	float getX()
-	{
-		return xCoordinate;
-	}
-	float getY()
-	{
-		return yCoordinate;
-	}
-
-private:
-	float xCoordinate;
-	float yCoordinate;
 };
 */
 
@@ -241,4 +278,114 @@ sf::Vector2f mirrorAboutPoint(sf::Vector2f point, sf::Vector2f mirror)
 	mirroredPoint.x = 2 * mirror.x - point.x; 
 	mirroredPoint.y = 2 * mirror.y - point.y;
 	return mirroredPoint;
+}
+
+/*
+void drawPBCircle(sf::RenderWindow& window, sf::Vector2f centreOrigin, float radius)
+{
+	//sf::Vector2f originPoint(sf::Vector2f(0, 0));
+	int nControlsPerPiece = 4;
+	int nKnots = 4; // number of knots in the circle
+	int nPieces = nKnots * (nControlsPerPiece-1);
+
+	std::vector<sf::Vector2f> coordinates;
+
+	for (int i = 0; i < nPieces; i++)
+	{
+		float angle = i * 2 * M_PI / nPieces;
+		coordinates.push_back(sf::Vector2f(centreOrigin.x + radius * cos(angle), centreOrigin.y + radius * sin(angle)));
+	}
+
+	std::cout << " length of coordinates = " << coordinates.size() << std::endl;
+	//std::cout << coordinates[0].x << std::endl;
+
+	std::vector<std::vector<sf::Vector2f>> controlPoints;
+	std::vector<sf::Vector2f > controlPointsPiece;
+
+	for (int i = 0; i < nKnots; i++)
+	{
+		std::cout << " i = " << i << std::endl;
+
+		for (int j = 0; j < nControlsPerPiece; j++)
+		{
+			//std::cout << " j = " << j << std::endl;
+			//std::cout << " element " << i * nControlsPerPiece + j << std::endl;
+			//std::cout << " size of controlPoints " << i * nControlsPerPiece + j << std::endl;
+
+			controlPointsPiece.push_back(coordinates[i * nControlsPerPiece + j]);
+
+			std::cout << " i = " << i << " j = " << j << " x = " << coordinates[i * nControlsPerPiece + j].x << " y = " << coordinates[i * nControlsPerPiece + j].y << std::endl;
+		}
+		controlPoints.push_back(controlPointsPiece);
+	}
+
+	//drawPiecewiseBezier(window, controlPoints, 20, 5);
+}
+*/
+
+sf::Vector2f normaliseVector(sf::Vector2f vector)
+{
+	float length = pow(vector.x * vector.x + vector.y * vector.y, 0.5);
+	vector.x = vector.x / length;
+	vector.y = vector.y / length;
+	return vector;
+}
+
+float vectorDot(sf::Vector2f vector1, sf::Vector2f vector2)
+{
+	return float (vector1.x * vector2.x + vector1.y * vector2.y);
+}
+
+sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2)
+{
+	return sf::Vector2f(vector1.x * vector2.x, vector1.y * vector2.y);
+}
+sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar)
+{
+	return sf::Vector2f(vector1.x * scalar, vector1.y * scalar);
+}
+
+std::vector<sf::CircleShape> initiateVectorOfBalls(float radius, int numberOfBalls)
+{
+	sf::CircleShape circleShape;
+	circleShape.setOrigin(sf::Vector2f(radius, radius));
+	circleShape.setRadius(radius);
+	circleShape.setFillColor(sf::Color::Magenta);
+	std::vector<sf::CircleShape> vectorOfBalls;
+	vectorOfBalls.push_back(circleShape);
+	return vectorOfBalls;
+}
+
+void testFunction()
+{
+	// using endl;
+	sf::Clock clockTotal1;
+	int totalIterations = 100000;
+	sf::Clock clockIncrement;
+
+	clockIncrement.restart();
+	for (int i = 0; i < totalIterations; i++)
+	{
+		sf::Time timeIncrement = clockIncrement.getElapsedTime();
+		std::cout << "Iteration " << i << " increment time " << timeIncrement.asMicroseconds() << std::endl;
+		clockIncrement.restart();
+
+	}
+	sf::Time elapsedTime1 = clockTotal1.getElapsedTime();
+
+	// using \n;
+	sf::Clock timeTotal2;
+	clockIncrement.restart();
+	for (int i = 0; i < totalIterations; i++)
+	{
+		sf::Time timeIncrement = clockIncrement.getElapsedTime();
+		std::cout << "Iteration " << i << " time increment " << timeIncrement.asMicroseconds() << "\n";
+		clockIncrement.restart();
+	}
+
+	sf::Time elapsedTime2 = timeTotal2.getElapsedTime();
+
+	std::cout << "Total for endl; = " << elapsedTime1.asMilliseconds() << std::endl;
+	std::cout << "Total time for newline= " << elapsedTime2.asMilliseconds() << std::endl;
+
 }
