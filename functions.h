@@ -23,13 +23,17 @@ float atanFullRevolution(float xDifference, float yDifference);
 void drawPiecewiseBezier(sf::RenderWindow& window, std::vector<std::vector< sf::Vector2f > > controlPoints, int lineResolutionPoints, float thickness);
 sf::Vector2f mirrorAboutPoint(sf::Vector2f point, sf::Vector2f mirror); 
 //void drawPBCircle(sf::RenderWindow& window, sf::Vector2f centreOrigin, float radius);
-void testFunction();
+void testTimeOfFunction();
 void initiateProgram();
 class PhysicsBall;
 float vectorDot(sf::Vector2f vector1, sf::Vector2f vector2);
 sf::Vector2f normaliseVector(sf::Vector2f vector);
 sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
+class MyWall;
+std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
+float NURBS_basis(float t, int k);
+
 
 class PhysicsBall
 {
@@ -78,17 +82,78 @@ public:
 		std::cout << "x velocity = " << velocity.x << " y velocity = " << velocity.y << std::endl;
 	}
 
+	bool pointCollide(sf::Vector2f coordinate)
+	{
+		// detect collision for a ball
+		sf::Vector2f ballCoordinate = shape.getPosition();
+		float distance = sqrt(pow(coordinate.x - ballCoordinate.x, 2) + pow(coordinate.y - ballCoordinate.y, 2));
+		return (distance < shape.getRadius());
+	}
+
 	sf::Vector2f velocity = sf::Vector2f(0, 0); // x velocity and y velocity
 };
 
+class MyWall
+{
+public:
+	sf::RenderWindow& window;
+
+	void drawAll()
+	{
+		for (int i = 0; i < nWallElements; i++)
+		{
+			drawElement(i);
+		}
+	}
+	void drawElement(int wallElement)
+	{
+		drawLineOnCoordinates(window, wallCoordinate1[wallElement], wallCoordinate2[wallElement], thickness);
+	}
+
+	void setWallCoordinates(std::vector < sf::Vector2f > newWallCoordinate1, std::vector < sf::Vector2f > newWallCoordinate2)
+	{
+		if (newWallCoordinate1.size() != newWallCoordinate2.size())
+		{
+			std::cout << "Error: wall coordinates vector should have equal length.\n";
+			std::cout << "newWallCoordinate1.size() = " << newWallCoordinate1.size() << "\n";
+			std::cout << "newWallCoordinate2.size() = " << newWallCoordinate2.size() << "\n";
+			std::cout << std::endl;
+			return;
+		}
+		int nWallElements = newWallCoordinate1.size();
+
+		wallCoordinate1 = newWallCoordinate1;
+		wallCoordinate2 = newWallCoordinate2;
+	}
+
+private:
+	std::vector < sf::Vector2f > wallCoordinate1;
+	std::vector < sf::Vector2f > wallCoordinate2;
+	int nWallElements = 0;
+	float thickness = 5.f;
+};
+
+class unpassableWall
+{
+public:
+	void setWallCoordinates( sf::Vector2f newWallCoordinate1, sf::Vector2f newWallCoordinate2)
+	{
+		wallCoordinate1 = newWallCoordinate1;
+		wallCoordinate2 = newWallCoordinate2;
+	}
+
+private:
+	sf::Vector2f wallCoordinate1 = sf::Vector2f(0, 0);
+	sf::Vector2f wallCoordinate2 = sf::Vector2f(0, 0);
+	float thickness = 5.f;
+};
 
 void initiateProgram()
 {// functions that run only once
-	PhysicsBall ball;
-	ball.setVelocity(sf::Vector2f(0.f, 1.f));
-	ball.printVelocity();
-	ball.reflectVelocity(sf::Vector2f(0.5, 0.8));
-	ball.printVelocity();
+	
+	//MyWall firstWall();
+	NURBS_basis(1.f, 1);
+	//testTimeOfFunction();
 }
 
 void drawAll(sf::RenderWindow& window)
@@ -101,13 +166,13 @@ void drawAll(sf::RenderWindow& window)
 	//controlPoints.push_back(sf::Vector2f(200, 100));
 	//controlPoints.push_back(sf::Vector2f(300, 300));
 
-	//std::vector<std::vector<sf::Vector2f>> controlPointsMatrix;
-	//controlPointsMatrix.push_back({ sf::Vector2f(0, 0), sf::Vector2f(100, 100), sf::Vector2f(200, 200) , sf::Vector2f(200, 300) });
-	//controlPointsMatrix.push_back({ sf::Vector2f(200, 300) , mirrorAboutPoint(controlPointsMatrix[0][2], controlPointsMatrix[0][3]), sf::Vector2f(300, 300)});
+	std::vector<std::vector<sf::Vector2f>> controlPointsMatrix;
+	controlPointsMatrix.push_back({ sf::Vector2f(0, 0), sf::Vector2f(100, 100), sf::Vector2f(200, 200) , sf::Vector2f(200, 300) });
+	controlPointsMatrix.push_back({ sf::Vector2f(200, 300) , mirrorAboutPoint(controlPointsMatrix[0][2], controlPointsMatrix[0][3]), sf::Vector2f(300, 300)});
 
 	//drawBezier(window, controlPoints, 20, 5);
 	
-	//drawPiecewiseBezier(window, controlPointsMatrix, 10, 5);
+	drawPiecewiseBezier(window, controlPointsMatrix, 10, 5);
 	//drawPBCircle(window, sf::Vector2f(0, 0), 50);
 
 	window.display();
@@ -345,35 +410,26 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar)
 	return sf::Vector2f(vector1.x * scalar, vector1.y * scalar);
 }
 
-std::vector<sf::CircleShape> initiateVectorOfBalls(float radius, int numberOfBalls)
+std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls)
 {
-	sf::CircleShape circleShape;
-	circleShape.setOrigin(sf::Vector2f(radius, radius));
-	circleShape.setRadius(radius);
-	circleShape.setFillColor(sf::Color::Magenta);
-	std::vector<sf::CircleShape> vectorOfBalls;
-	vectorOfBalls.push_back(circleShape);
+	PhysicsBall firstBall;
+	firstBall.shape.setOrigin(sf::Vector2f(radius, radius));
+	firstBall.shape.setRadius(radius);
+	firstBall.shape.setFillColor(sf::Color::Magenta);
+	std::vector<PhysicsBall> vectorOfBalls;
+	vectorOfBalls.push_back(firstBall);
 	return vectorOfBalls;
 }
 
-void testFunction()
+void testTimeOfFunction()
 {
-	// using endl;
 	sf::Clock clockTotal1;
-	int totalIterations = 100000;
+	int totalIterations = 500;
 	sf::Clock clockIncrement;
 
-	clockIncrement.restart();
-	for (int i = 0; i < totalIterations; i++)
-	{
-		sf::Time timeIncrement = clockIncrement.getElapsedTime();
-		std::cout << "Iteration " << i << " increment time " << timeIncrement.asMicroseconds() << std::endl;
-		clockIncrement.restart();
-
-	}
-	sf::Time elapsedTime1 = clockTotal1.getElapsedTime();
-
+	////////////////////////////////////////////////////////////////
 	// using \n;
+	std::vector< sf::Time > timeV;
 	sf::Clock timeTotal2;
 	clockIncrement.restart();
 	for (int i = 0; i < totalIterations; i++)
@@ -382,10 +438,46 @@ void testFunction()
 		std::cout << "Iteration " << i << " time increment " << timeIncrement.asMicroseconds() << "\n";
 		clockIncrement.restart();
 	}
-
 	sf::Time elapsedTime2 = timeTotal2.getElapsedTime();
+	timeV.push_back(timeTotal2.getElapsedTime()); 
+
+	////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////
+	// using endl;
+	clockIncrement.restart();
+	for (int i = 0; i < totalIterations; i++)
+	{
+		sf::Time timeIncrement = clockIncrement.getElapsedTime();
+		std::cout << "Iteration " << i << " increment time " << timeIncrement.asMicroseconds() << std::endl;
+		clockIncrement.restart();
+	}
+	sf::Time elapsedTime1 = clockTotal1.getElapsedTime();
+	////////////////////////////////////////////////////////////////
 
 	std::cout << "Total for endl; = " << elapsedTime1.asMilliseconds() << std::endl;
 	std::cout << "Total time for newline= " << elapsedTime2.asMilliseconds() << std::endl;
-
 }
+
+void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots)
+{
+	int parameter = controlPoints.size();
+	int degree = parameter - 1;
+	//if (knots.size() != )
+}
+
+float NURBS_basis(float t, float t_current, float t_next, int parameter)
+{ 
+	// parameter = number of control points (traditionally "k")
+
+	if ((t >= t_current) && (t < t_next))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+
