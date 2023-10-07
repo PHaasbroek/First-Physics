@@ -32,7 +32,7 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float NURBS_basis(float t, int k);
+float BSpline_N(float t, float t_current, float t_next, int parameter);
 
 
 class PhysicsBall
@@ -152,7 +152,7 @@ void initiateProgram()
 {// functions that run only once
 	
 	//MyWall firstWall();
-	NURBS_basis(1.f, 1);
+	BSpline_N(1.f, 1);
 	//testTimeOfFunction();
 }
 
@@ -461,15 +461,55 @@ void testTimeOfFunction()
 
 void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots)
 {
-	int parameter = controlPoints.size();
-	int degree = parameter - 1;
+	// Knot vector: a list t0 <= t1 <= t2 <= ... t_m-1 <= tm of m + 1 nondecreasing numbers, such that the same value should not appear more than k times, (k = order of the B-spline).
+	
+	// check for knots satisfying increasing property
+	int numKnots = knots.size();
+	int numIdenticalKnots = 0;
+	int order = controlPoints.size();
+
+	for (int i = 0; i < numKnots-1; i++)
+	{
+		if (knots[i] > knots[i + 1])
+		{
+			std::cout << "Knots vector must be non decreasing!" << std::endl;
+			return;
+		}
+
+		if (knots[i] == knots[i + 1])
+		{
+			numIdenticalKnots++;
+		}
+		else
+		{
+			numIdenticalKnots = 0;
+		}
+
+		if (numIdenticalKnots > order)
+		{
+			std::cout << "Knot value may not apear more than k (order) times!" << std::endl;
+		}
+	}
+
+
+	float knotsMax = knots.back();
+	float tSpacing = knotsMax / tPoints;
+	float t = 0;
+	for (int tIncrement = 0; tIncrement < tPoints; tIncrement++)
+	{
+		t = tIncrement * tSpacing;
+
+
+	}
+
+
+	//int degree = order - 1;
 	//if (knots.size() != )
 }
 
-float NURBS_basis(float t, float t_current, float t_next, int parameter)
-{ 
-	// parameter = number of control points (traditionally "k")
-
+float BSpline_N(float t, int i, std::vector<float> knots, int k)
+{	
+	
 	if ((t >= t_current) && (t < t_next))
 	{
 		return 1;
