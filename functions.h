@@ -509,15 +509,18 @@ void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots
 
 float BSpline_N(float t, int i, std::vector<float> knots, int k)
 {	
-	
-	if ((t >= t_current) && (t < t_next))
-	{
-		return 1;
-	}
-	else
+	if (t < knots[i] || t > knots[i])
 	{
 		return 0;
 	}
+	
+	if (k == 1)
+	{
+		return 1;
+	}
+	
+	N_(i,k) (u) = (u - t_i) * N_(i, k - 1) (u) / (t_(i + k - 1) - t_i) + ( t_(i+k) - u )
+
 }
 
 
