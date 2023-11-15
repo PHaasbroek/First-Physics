@@ -32,7 +32,8 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float NURBS_basis(float t, int k);
+float NURBS_basis(float t, float t_current, float t_next);
+bool checkNonDecreasing(std::vector<float> knots);
 
 
 class PhysicsBall
@@ -152,7 +153,7 @@ void initiateProgram()
 {// functions that run only once
 	
 	//MyWall firstWall();
-	NURBS_basis(1.f, 1);
+	//NURBS_basis(1.f, 1);
 	//testTimeOfFunction();
 }
 
@@ -464,20 +465,64 @@ void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots
 	int parameter = controlPoints.size();
 	int degree = parameter - 1;
 	//if (knots.size() != )
+	if (!checkNonDecreasing(knots))
+	{
+		return;
+	}
+
+
+
+
+
+
 }
 
 float NURBS_basis(float t, float t_current, float t_next, int parameter)
 { 
 	// parameter = number of control points (traditionally "k")
-
-	if ((t >= t_current) && (t < t_next))
+	if (parameter_k > 1)
 	{
-		return 1;
+		(t-
 	}
 	else
 	{
-		return 0;
+		if ((t >= t_current) && (t < t_next))
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
 	}
+}
+
+bool checkNonDecreasing(std::vector<float> knots)
+{
+	// tested to work! 
+	int knotsSize = knots.size();
+
+	if (knotsSize < 2) // ensure that we have more than two entries
+	{
+		return false;
+		std::cout << "Not enough entries!" << std::endl;
+	}
+
+	float firstEntry;
+	float secondEntry;
+	
+	for (int index = 0; index < (knotsSize-1); index++)
+	{
+		firstEntry = knots[index];
+		secondEntry = knots[index + 1];
+
+		if (firstEntry > secondEntry)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 
