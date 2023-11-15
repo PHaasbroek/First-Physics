@@ -32,7 +32,7 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float NURBS_basis(float t, float t_current, float t_next);
+float NURBS_basis(float t, std::vector<float> knots, int parameter);
 bool checkNonDecreasing(std::vector<float> knots);
 
 
@@ -152,6 +152,16 @@ private:
 void initiateProgram()
 {// functions that run only once
 	
+	std::vector<float> knotVector;
+	knotVector.push_back(0.0);
+	knotVector.push_back(0.0);
+	knotVector.push_back(1.0);
+	knotVector.push_back(2.0);
+	knotVector.push_back(3.0);
+	knotVector.push_back(4.0);
+
+	NURBS_basis(0, knotVector, 1);
+
 	//MyWall firstWall();
 	//NURBS_basis(1.f, 1);
 	//testTimeOfFunction();
@@ -477,16 +487,45 @@ void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots
 
 }
 
-float NURBS_basis(float t, float t_current, float t_next, int parameter)
+float NURBS_basis(float t, std::vector<float> knots, int parameter)
 { 
 	// parameter = number of control points (traditionally "k")
-	if (parameter_k > 1)
+	// knots = non decreasing list (traditionally "t")
+
+	float currentKnot;
+	float nextKnot;
+	int knotElement = 0;
+	for (; knotElement < knots.size()-1; knotElement++)
 	{
-		(t-
+		// set the currentKnot and the nextKnot to the values just below and just above the given t values. 
+		currentKnot = knots[knotElement];
+		nextKnot = knots[knotElement + 1];
+		if (currentKnot < t && t < nextKnot)
+		{
+			// this is good for most cases, when t is not exactly eqaul to the knot value
+			break; 
+		}
+
+		// the condition for when this is true in the beginning!!!!!!!!!!!
+		if (t == currentKnot)
+		{
+			// when t == current knot
+			break;
+		}
+
+		// by default, if none of the above are satisfied, the last currentKnot and nextKnot will be returned. 
+	}
+
+	std::cout << "currentKnot: " << currentKnot << " t: " << t << " nextKnot: " << nextKnot << std::endl;
+
+	/*
+	if (parameter > 1)
+	{
+		(t - currentKnot) / (knots[knotElement])
 	}
 	else
 	{
-		if ((t >= t_current) && (t < t_next))
+		if ((t >= currentKnot) && (t < nextKnot))
 		{
 			return 1;
 		}
@@ -495,11 +534,17 @@ float NURBS_basis(float t, float t_current, float t_next, int parameter)
 			return 0;
 		}
 	}
+	*/
+	return 0.f;
 }
 
 bool checkNonDecreasing(std::vector<float> knots)
 {
-	// tested to work! 
+	// tested to work!
+	
+	// at least one value should be higher than the previous. 
+
+
 	int knotsSize = knots.size();
 
 	if (knotsSize < 2) // ensure that we have more than two entries
