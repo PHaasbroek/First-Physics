@@ -32,8 +32,8 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float BSpline_N(int i, int k, float t, const std::vector<float>& knots);
-void TESTpassByRef(const int& var);
+float NURBS_basis(float t, std::vector<float> knots, int parameter);
+bool checkNonDecreasing(std::vector<float> knots);
 
 
 class PhysicsBall
@@ -151,18 +151,19 @@ private:
 
 void initiateProgram()
 {// functions that run only once
-
 	
-	std::vector<float> knots;
-	knots.push_back(1);
-	knots.push_back(1);
-	knots.push_back(1);
+	std::vector<float> knotVector;
+	knotVector.push_back(0.0);
+	knotVector.push_back(0.0);
+	knotVector.push_back(1.0);
+	knotVector.push_back(2.0);
+	knotVector.push_back(3.0);
+	knotVector.push_back(4.0);
 
+	NURBS_basis(0, knotVector, 1);
 
-	BSpline_N(1, 1, 0, knots);
-	
 	//MyWall firstWall();
-	//BSpline_N(1.f, 1);
+	//NURBS_basis(1.f, 1);
 	//testTimeOfFunction();
 }
 
@@ -471,69 +472,102 @@ void testTimeOfFunction()
 
 void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots)
 {
-	// Knot vector: a list t0 <= t1 <= t2 <= ... t_m-1 <= tm of m + 1 nondecreasing numbers, such that the same value should not appear more than k times, (k = order of the B-spline).
-	
-	// check for knots satisfying increasing property
-	int numKnots = knots.size();
-	int numIdenticalKnots = 0;
-	int order = controlPoints.size();
-
-	for (int i = 0; i < numKnots-1; i++)
+	int parameter = controlPoints.size();
+	int degree = parameter - 1;
+	//if (knots.size() != )
+	if (!checkNonDecreasing(knots))
 	{
-		if (knots[i] > knots[i + 1])
+		return;
+	}
+
+
+
+
+
+
+}
+
+float NURBS_basis(float t, std::vector<float> knots, int parameter)
+{ 
+	// parameter = number of control points (traditionally "k")
+	// knots = non decreasing list (traditionally "t")
+
+	float currentKnot;
+	float nextKnot;
+	int knotElement = 0;
+	for (; knotElement < knots.size()-1; knotElement++)
+	{
+		// set the currentKnot and the nextKnot to the values just below and just above the given t values. 
+		currentKnot = knots[knotElement];
+		nextKnot = knots[knotElement + 1];
+		if (currentKnot < t && t < nextKnot)
 		{
-			std::cout << "Knots vector must be non decreasing!" << std::endl;
-			return;
+			// this is good for most cases, when t is not exactly eqaul to the knot value
+			break; 
 		}
 
-		if (knots[i] == knots[i + 1])
+		// the condition for when this is true in the beginning!!!!!!!!!!!
+		if (t == currentKnot)
 		{
-			numIdenticalKnots++;
+			// when t == current knot
+			break;
+		}
+
+		// by default, if none of the above are satisfied, the last currentKnot and nextKnot will be returned. 
+	}
+
+	std::cout << "currentKnot: " << currentKnot << " t: " << t << " nextKnot: " << nextKnot << std::endl;
+
+	/*
+	if (parameter > 1)
+	{
+		(t - currentKnot) / (knots[knotElement])
+	}
+	else
+	{
+		if ((t >= currentKnot) && (t < nextKnot))
+		{
+			return 1;
 		}
 		else
 		{
-			numIdenticalKnots = 0;
+			return 0;
 		}
-
-		if (numIdenticalKnots > order)
-		{
-			std::cout << "Knot value may not apear more than k (order) times!" << std::endl;
-		}
-	}
-
-	/*
-	float knotsMax = knots.back();
-	float tSpacing = knotsMax / tPoints;
-	float t = 0;
-	for (int tIncrement = 0; tIncrement < tPoints; tIncrement++)
-	{
-		t = tIncrement * tSpacing
 	}
 	*/
-
-
-	//int degree = order - 1;
-	//if (knots.size() != )
+	return 0.f;
 }
 
-float BSpline_N(int i, int k, float u, const std::vector<float> &knots)
-{	
-	std::cout << "knots[i] = " << knots[i] << std::endl;
+bool checkNonDecreasing(std::vector<float> knots)
+{
+	// tested to work!
+	
+	// at least one value should be higher than the previous. 
 
-	if (u < knots[i] || u > knots[i])
-	{
-		return 0;
-	}
-	
-	if (k == 1)
-	{
-		return 1;
-	}
-	
-	
-	return (u - knots[i]) * BSpline_N(i, k - 1, u, knots) / (knots[i + k - 1] - knots[i]) + (knots[i + k] + u) * BSpline_N(i + 1, k - 1, u, knots) / (knots[i + k] - knots[i + 1]);
 
-	//N_(i,k) (u) = (u - t_i) * N_(i, k - 1) (u) / (t_(i + k - 1) - t_i) + ( t_(i+k) - u )
+	int knotsSize = knots.size();
+
+	if (knotsSize < 2) // ensure that we have more than two entries
+	{
+		return false;
+		std::cout << "Not enough entries!" << std::endl;
+	}
+
+	float firstEntry;
+	float secondEntry;
+	
+	for (int index = 0; index < (knotsSize-1); index++)
+	{
+		firstEntry = knots[index];
+		secondEntry = knots[index + 1];
+
+		if (firstEntry > secondEntry)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 
