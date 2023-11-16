@@ -470,26 +470,48 @@ void testTimeOfFunction()
 	std::cout << "Total time for newline= " << elapsedTime2.asMilliseconds() << std::endl;
 }
 
-void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots)
+void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots, int order)
 {
-	int parameter = controlPoints.size();
+	//int parameter = controlPoints.size();
 	int degree = parameter - 1;
+
 	//if (knots.size() != )
 	if (!checkNonDecreasing(knots))
 	{
 		return;
 	}
 
+	int knotsSize = knots.size();
+	int controlPointsSize = controlPoints.size();
 
+	if (knotsSize != controlPointsSize + order) // chech for right number of knots
+	{
+		return;
+	}
 
-
-
+	/*
+	int numEqualKnots = 0;
+	for (int i = 1; i < knotsSize; i++)
+	{
+		if (knots[i - 1] == knots[i])
+		{
+			numEqualKnots++;
+		}
+	}
+	if (numEqualKnots > order)
+	{
+		return;
+	}
+	*/
 
 }
 
-float NURBS_basis(float t, std::vector<float> knots, int parameter)
+
+
+
+float NURBS_basis(float t, std::vector<float> knots, int parameter_k, int order)
 { 
-	// parameter = number of control points (traditionally "k")
+	// parameter = (traditionally "k")
 	// knots = non decreasing list (traditionally "t")
 
 	float currentKnot;
@@ -516,12 +538,44 @@ float NURBS_basis(float t, std::vector<float> knots, int parameter)
 		// by default, if none of the above are satisfied, the last currentKnot and nextKnot will be returned. 
 	}
 
-	std::cout << "currentKnot: " << currentKnot << " t: " << t << " nextKnot: " << nextKnot << std::endl;
+	//std::cout << "currentKnot: " << currentKnot << " t: " << t << " nextKnot: " << nextKnot << std::endl;
 
-	/*
-	if (parameter > 1)
+	float numerator1;
+	float denominator1;
+	float fraction1;
+	float numerator2;
+	float denominator2;
+	float fraction2;
+
+
+	
+	if (parameter_k > 1)
 	{
-		(t - currentKnot) / (knots[knotElement])
+		numerator1 = (t - currentKnot);
+		denominator1 = (knots[knotElement + parameter_k - 1] - knots[knotElement]);
+		numerator2 = (knots[knotElement + parameter_k] - t);
+		denominator1 = knots[knotElement + parameter_k] - knots[knotElement + 1];
+
+		if (denominator1 == 0)
+		{
+			fraction1 = 0;
+		}
+		else
+		{
+			fraction1 = numerator1 / denominator1;
+		}
+
+		if (denominator2 == 0)
+		{
+			fraction2 = 0;
+		}
+		else
+		{
+			fraction2 = numerator2 / denominator2;
+		}
+
+		return fraction1 * NURBS_basis(t, knots, parameter_k - 1) + fraction2 * NURBS_basis(t, knots, parameter_k - 1);
+
 	}
 	else
 	{
@@ -534,7 +588,7 @@ float NURBS_basis(float t, std::vector<float> knots, int parameter)
 			return 0;
 		}
 	}
-	*/
+	
 	return 0.f;
 }
 
