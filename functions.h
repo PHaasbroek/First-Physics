@@ -6,8 +6,8 @@
 #include <SFML/Graphics.hpp>
 
 // global variables
-int const WINDOW_WIDTH = 400;
-int const WINDOW_HEIGHT = 400;
+const int WINDOW_WIDTH = 400;
+const int WINDOW_HEIGHT = 400;
 
 // function identifiers
 
@@ -32,7 +32,8 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float BSpline_N(float t, float t_current, float t_next, int parameter);
+float BSpline_N(int i, int k, float t, const std::vector<float>& knots);
+void TESTpassByRef(const int& var);
 
 
 class PhysicsBall
@@ -150,9 +151,18 @@ private:
 
 void initiateProgram()
 {// functions that run only once
+
+	
+	std::vector<float> knots;
+	knots.push_back(1);
+	knots.push_back(1);
+	knots.push_back(1);
+
+
+	BSpline_N(1, 1, 0, knots);
 	
 	//MyWall firstWall();
-	BSpline_N(1.f, 1);
+	//BSpline_N(1.f, 1);
 	//testTimeOfFunction();
 }
 
@@ -491,25 +501,26 @@ void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots
 		}
 	}
 
-
+	/*
 	float knotsMax = knots.back();
 	float tSpacing = knotsMax / tPoints;
 	float t = 0;
 	for (int tIncrement = 0; tIncrement < tPoints; tIncrement++)
 	{
-		t = tIncrement * tSpacing;
-
-
+		t = tIncrement * tSpacing
 	}
+	*/
 
 
 	//int degree = order - 1;
 	//if (knots.size() != )
 }
 
-float BSpline_N(float t, int i, std::vector<float> knots, int k)
+float BSpline_N(int i, int k, float u, const std::vector<float> &knots)
 {	
-	if (t < knots[i] || t > knots[i])
+	std::cout << "knots[i] = " << knots[i] << std::endl;
+
+	if (u < knots[i] || u > knots[i])
 	{
 		return 0;
 	}
@@ -519,8 +530,20 @@ float BSpline_N(float t, int i, std::vector<float> knots, int k)
 		return 1;
 	}
 	
-	N_(i,k) (u) = (u - t_i) * N_(i, k - 1) (u) / (t_(i + k - 1) - t_i) + ( t_(i+k) - u )
+	
+	return (u - knots[i]) * BSpline_N(i, k - 1, u, knots) / (knots[i + k - 1] - knots[i]) + (knots[i + k] + u) * BSpline_N(i + 1, k - 1, u, knots) / (knots[i + k] - knots[i + 1]);
 
+	//N_(i,k) (u) = (u - t_i) * N_(i, k - 1) (u) / (t_(i + k - 1) - t_i) + ( t_(i+k) - u )
 }
 
 
+void TESTpassByRef(const int& var)
+{
+	// this works and does not allow modification of the variable that is defined as constant. 
+	// call as follows: 
+	//int var = 69;
+	//TESTpassByRef(var);
+
+	std::cout << "var = " << var << std::endl;
+	return;
+}
