@@ -153,17 +153,7 @@ private:
 void initiateProgram()
 {// functions that run only once
 	
-	std::vector<float> vector;
-
-	vector = linearSpace(0, 10, 5);
-
-	for (int i = 0; i < vector.size(); i++)
-	{
-		std::cout << "i = " << i << " value = " << vector[i] << std::endl;
-	}
-
-
-	/*
+	
 	std::vector<float> knotVector;
 	knotVector.push_back(0.0);
 	knotVector.push_back(0.0);
@@ -173,7 +163,7 @@ void initiateProgram()
 	knotVector.push_back(4.0);
 
 	NURBS_basis(0, knotVector, 1);
-	*/
+	
 	//MyWall firstWall();
 	//NURBS_basis(1.f, 1);
 	//testTimeOfFunction();
@@ -482,11 +472,32 @@ void testTimeOfFunction()
 	std::cout << "Total time for newline= " << elapsedTime2.asMilliseconds() << std::endl;
 }
 
-void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots, int order)
-{
-	//int parameter = controlPoints.size();
-	//int degree = parameter - 1;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////// The NURBS function /////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
 
+order, k, is the number of times the NURBS basis function is iteratively employed. 
+degree = k-1
+
+a spline of order k can be defined as:
+
+Q(u) = sum( i = 0 to n, p(i) * N(i, k, u) )
+
+Q is the value of the spline. 
+p(i) are the control points. 
+n is the number of control points
+
+NURBS_basis(i, k, u)
+i = 
+
+*/
+
+
+
+
+std::vector<sf::Vector2f> initiateNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots, int order)
+{
 	//if (knots.size() != )
 	if (!checkNonDecreasing(knots))
 	{
@@ -501,7 +512,6 @@ void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots
 		return;
 	}
 
-	/*
 	int numEqualKnots = 0;
 	for (int i = 1; i < knotsSize; i++)
 	{
@@ -515,6 +525,8 @@ void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots
 		return;
 	}
 	*/
+
+
 
 }
 
@@ -647,8 +659,7 @@ void TESTpassByRef(const int& var)
 
 std::vector<float> linearSpace(float startValue, float endValue, int numberOfElements)
 {
-	// tested to work
-
+	// tested to work!
 	float space = (endValue - startValue) / (numberOfElements - 1);
 	std::vector<float> linearSpaceVector;
 	
