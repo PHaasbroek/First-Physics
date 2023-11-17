@@ -32,8 +32,9 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float NURBS_basis(float t, std::vector<float> knots, int parameter);
+float NURBS_basis(float t, std::vector<float> knots, int parameter_k, int order);
 bool checkNonDecreasing(std::vector<float> knots);
+std::vector<float> linearSpace(float startValue, float endValue, int numberOfElements);
 
 
 class PhysicsBall
@@ -152,6 +153,17 @@ private:
 void initiateProgram()
 {// functions that run only once
 	
+	std::vector<float> vector;
+
+	vector = linearSpace(0, 10, 5);
+
+	for (int i = 0; i < vector.size(); i++)
+	{
+		std::cout << "i = " << i << " value = " << vector[i] << std::endl;
+	}
+
+
+	/*
 	std::vector<float> knotVector;
 	knotVector.push_back(0.0);
 	knotVector.push_back(0.0);
@@ -161,7 +173,7 @@ void initiateProgram()
 	knotVector.push_back(4.0);
 
 	NURBS_basis(0, knotVector, 1);
-
+	*/
 	//MyWall firstWall();
 	//NURBS_basis(1.f, 1);
 	//testTimeOfFunction();
@@ -473,7 +485,7 @@ void testTimeOfFunction()
 void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots, int order)
 {
 	//int parameter = controlPoints.size();
-	int degree = parameter - 1;
+	//int degree = parameter - 1;
 
 	//if (knots.size() != )
 	if (!checkNonDecreasing(knots))
@@ -506,16 +518,13 @@ void drawNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots
 
 }
 
-
-
-
 float NURBS_basis(float t, std::vector<float> knots, int parameter_k, int order)
 { 
 	// parameter = (traditionally "k")
 	// knots = non decreasing list (traditionally "t")
 
-	float currentKnot;
-	float nextKnot;
+	float currentKnot = 0;
+	float nextKnot = 0;
 	int knotElement = 0;
 	for (; knotElement < knots.size()-1; knotElement++)
 	{
@@ -554,7 +563,7 @@ float NURBS_basis(float t, std::vector<float> knots, int parameter_k, int order)
 		numerator1 = (t - currentKnot);
 		denominator1 = (knots[knotElement + parameter_k - 1] - knots[knotElement]);
 		numerator2 = (knots[knotElement + parameter_k] - t);
-		denominator1 = knots[knotElement + parameter_k] - knots[knotElement + 1];
+		denominator2 = knots[knotElement + parameter_k] - knots[knotElement + 1];
 
 		if (denominator1 == 0)
 		{
@@ -574,7 +583,7 @@ float NURBS_basis(float t, std::vector<float> knots, int parameter_k, int order)
 			fraction2 = numerator2 / denominator2;
 		}
 
-		return fraction1 * NURBS_basis(t, knots, parameter_k - 1) + fraction2 * NURBS_basis(t, knots, parameter_k - 1);
+		//return fraction1 * NURBS_basis(t, knots, parameter_k - 1) + fraction2 * NURBS_basis(t, knots, parameter_k - 1);
 
 	}
 	else
@@ -634,4 +643,24 @@ void TESTpassByRef(const int& var)
 
 	std::cout << "var = " << var << std::endl;
 	return;
+}
+
+std::vector<float> linearSpace(float startValue, float endValue, int numberOfElements)
+{
+	// tested to work
+
+	float space = (endValue - startValue) / (numberOfElements - 1);
+	std::vector<float> linearSpaceVector;
+	
+	linearSpaceVector.push_back(startValue);
+
+	for (int i = 1; i < numberOfElements; i++)
+	{
+		linearSpaceVector.push_back(linearSpaceVector[i - 1] + space);
+	}
+	
+	linearSpaceVector.pop_back(); // replace the last element with the given last element, in case of a numerical error. 
+	linearSpaceVector.push_back(endValue);
+
+	return linearSpaceVector;
 }
