@@ -32,7 +32,7 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float NURBS_basis(float t, std::vector<float> knots, int parameter_k, int order);
+float NURBS_basis(float u, std::vector<float>& knots, int parameter_k, int i)
 bool checkNonDecreasing(std::vector<float> knots);
 std::vector<float> linearSpace(float startValue, float endValue, int numberOfElements);
 
@@ -162,7 +162,7 @@ void initiateProgram()
 	knotVector.push_back(3.0);
 	knotVector.push_back(4.0);
 
-	NURBS_basis(0, knotVector, 1);
+	//NURBS_basis(0, knotVector, 1);
 	
 	//MyWall firstWall();
 	//NURBS_basis(1.f, 1);
@@ -485,23 +485,29 @@ a spline of order k can be defined as:
 Q(u) = sum( i = 0 to n, p(i) * N(i, k, u) )
 
 Q is the value of the spline. 
-p(i) are the control points. 
+p are the control points. 
+i is the control point being considered
 n is the number of control points
 
+k is the order of the spline. The lower the order, the closer the spline follows the control polygon. 
+k-1 is the degree of the spline. 
+Cubic = 3rd degree, 4th order.  
+
 NURBS_basis(i, k, u)
-i = 
 
 */
 
 
 
 
-std::vector<sf::Vector2f> initiateNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots, int order)
+std::vector<sf::Vector2f> initialiseNURBS(std::vector<sf::Vector2f> controlPoints, std::vector<float> knots, int order)
 {
 	//if (knots.size() != )
+	// maximum order = number of control points - 1
 	if (!checkNonDecreasing(knots))
-	{
-		return;
+	{	
+
+		return std::vector<sf::Vector2f> (-1, -1);
 	}
 
 	int knotsSize = knots.size();
@@ -509,7 +515,13 @@ std::vector<sf::Vector2f> initiateNURBS(std::vector<sf::Vector2f> controlPoints,
 
 	if (knotsSize != controlPointsSize + order) // chech for right number of knots
 	{
-		return;
+		std::cout << "wrong number of knots\n";
+		std::cout << "number of knots = number of control points + order\n";
+		std::cout << "but you have\n";
+		std::cout << "number of knots = " << knotsSize << " and control points = " << controlPointsSize + order;
+		std::cout << std::endl;
+		
+		//return std::vector<float>(-1);
 	}
 
 	int numEqualKnots = 0;
@@ -522,95 +534,80 @@ std::vector<sf::Vector2f> initiateNURBS(std::vector<sf::Vector2f> controlPoints,
 	}
 	if (numEqualKnots > order)
 	{
-		return;
+		return std::vector<float>(-1);
 	}
-	*/
 
+	float u = 1;
+	sf::Vector2f sumControlPointParts;
+	sumControlPointParts = sf::Vector2f(0.0, 0.0);
+	float basisFunctionValue;
 
+	for (int controlPointElement = 0; controlPointElement < controlPointsSize; controlPointElement++)
+	{
+		basisFunctionValue = NURBS_basis(u, knots, order, controlPointElement);
 
+		sumControlPointParts = sumControlPointParts + sf::Vector2f(controlPoints[controlPointElement].x * basisFunctionValue, controlPoints[controlPointElement].y * basisFunctionValue);
+	}
 }
 
-float NURBS_basis(float t, std::vector<float> knots, int parameter_k, int order)
+float NURBS_basis(float u, std::vector<float> & knots, int parameter_k, int i)
 { 
-	// parameter = (traditionally "k")
+	// parameter = (traditionally "k") is the order
 	// knots = non decreasing list (traditionally "t")
+	// t = the point for which the spline is calculated
+	// i  is the ... just look at the formula
 
-	float currentKnot = 0;
-	float nextKnot = 0;
-	int knotElement = 0;
-	for (; knotElement < knots.size()-1; knotElement++)
+	float currentKnot = knots[i];
+	float nextKnot = knots[i+1];
+
+	if (parameter_k == 1) 
 	{
-		// set the currentKnot and the nextKnot to the values just below and just above the given t values. 
-		currentKnot = knots[knotElement];
-		nextKnot = knots[knotElement + 1];
-		if (currentKnot < t && t < nextKnot)
+		if (currentKnot < u && u < nextKnot)
 		{
-			// this is good for most cases, when t is not exactly eqaul to the knot value
-			break; 
-		}
-
-		// the condition for when this is true in the beginning!!!!!!!!!!!
-		if (t == currentKnot)
-		{
-			// when t == current knot
-			break;
-		}
-
-		// by default, if none of the above are satisfied, the last currentKnot and nextKnot will be returned. 
-	}
-
-	//std::cout << "currentKnot: " << currentKnot << " t: " << t << " nextKnot: " << nextKnot << std::endl;
-
-	float numerator1;
-	float denominator1;
-	float fraction1;
-	float numerator2;
-	float denominator2;
-	float fraction2;
-
-
-	
-	if (parameter_k > 1)
-	{
-		numerator1 = (t - currentKnot);
-		denominator1 = (knots[knotElement + parameter_k - 1] - knots[knotElement]);
-		numerator2 = (knots[knotElement + parameter_k] - t);
-		denominator2 = knots[knotElement + parameter_k] - knots[knotElement + 1];
-
-		if (denominator1 == 0)
-		{
-			fraction1 = 0;
+			return 1.0;
 		}
 		else
 		{
-			fraction1 = numerator1 / denominator1;
+			return 0.0;
 		}
-
-		if (denominator2 == 0)
-		{
-			fraction2 = 0;
-		}
-		else
-		{
-			fraction2 = numerator2 / denominator2;
-		}
-
-		//return fraction1 * NURBS_basis(t, knots, parameter_k - 1) + fraction2 * NURBS_basis(t, knots, parameter_k - 1);
-
 	}
 	else
 	{
-		if ((t >= currentKnot) && (t < nextKnot))
+		float numerator1;
+		float denominator1;
+		float fraction1;
+		float numerator2;
+		float denominator2;
+		float fraction2;
+		
+		if (parameter_k > 1)
 		{
-			return 1;
-		}
-		else
-		{
-			return 0;
+			numerator1 = (u - currentKnot);
+			denominator1 = (knots[i + parameter_k - 1] - knots[i]);
+			numerator2 = (knots[i + parameter_k] - u);
+			denominator2 = knots[i + parameter_k] - knots[i + 1];
+
+			if (denominator1 == 0)
+			{
+				fraction1 = 0;
+			}
+			else
+			{
+				fraction1 = numerator1 / denominator1;
+			}
+
+			if (denominator2 == 0)
+			{
+				fraction2 = 0;
+			}
+			else
+			{
+				fraction2 = numerator2 / denominator2;
+			}
+
+			return fraction1 * NURBS_basis(u, knots, parameter_k - 1, i) + fraction2 * NURBS_basis(u, knots, parameter_k - 1, i + 1);
 		}
 	}
-	
-	return 0.f;
 }
 
 bool checkNonDecreasing(std::vector<float> knots)

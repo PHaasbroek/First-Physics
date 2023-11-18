@@ -15,7 +15,7 @@ int main(void)
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-
+        
         drawAll(window);
     }
 
