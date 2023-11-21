@@ -32,7 +32,7 @@ sf::Vector2f scaleVector(sf::Vector2f vector1, float scalar);
 sf::Vector2f elementMultiply(sf::Vector2f vector1, sf::Vector2f vector2);
 class MyWall;
 std::vector<PhysicsBall> initiateVectorOfBalls(float radius, int numberOfBalls);
-float NURBS_basis(float u, std::vector<float>& knots, int parameter_k, int i)
+float NURBS_basis(float u, std::vector<float>& knots, int parameter_k, int i);
 bool checkNonDecreasing(std::vector<float> knots);
 std::vector<float> linearSpace(float startValue, float endValue, int numberOfElements);
 
@@ -156,13 +156,21 @@ void initiateProgram()
 	
 	std::vector<float> knotVector;
 	knotVector.push_back(0.0);
-	knotVector.push_back(0.0);
 	knotVector.push_back(1.0);
 	knotVector.push_back(2.0);
 	knotVector.push_back(3.0);
 	knotVector.push_back(4.0);
 
-	//NURBS_basis(0, knotVector, 1);
+	int endVal = 100;
+	float increment = (float)(4) / (float)(endVal);
+
+	for (int i = 0; i < endVal; i++)
+	{
+		
+		std::cout << i << "  " << (float)(i)*increment << "  " << NURBS_basis((float)(i)*increment, knotVector, 1, 1) << std::endl;
+
+	}
+
 	
 	//MyWall firstWall();
 	//NURBS_basis(1.f, 1);
@@ -506,8 +514,9 @@ std::vector<sf::Vector2f> initialiseNURBS(std::vector<sf::Vector2f> controlPoint
 	// maximum order = number of control points - 1
 	if (!checkNonDecreasing(knots))
 	{	
-
-		return std::vector<sf::Vector2f> (-1, -1);
+		std::vector<sf::Vector2f> returnVector;
+		returnVector.push_back(sf::Vector2f(-1, -1));
+		return returnVector;
 	}
 
 	int knotsSize = knots.size();
@@ -521,7 +530,9 @@ std::vector<sf::Vector2f> initialiseNURBS(std::vector<sf::Vector2f> controlPoint
 		std::cout << "number of knots = " << knotsSize << " and control points = " << controlPointsSize + order;
 		std::cout << std::endl;
 		
-		//return std::vector<float>(-1);
+		std::vector<sf::Vector2f> returnVector;
+		returnVector.push_back(sf::Vector2f(-1, -1));
+		return returnVector;
 	}
 
 	int numEqualKnots = 0;
@@ -534,7 +545,9 @@ std::vector<sf::Vector2f> initialiseNURBS(std::vector<sf::Vector2f> controlPoint
 	}
 	if (numEqualKnots > order)
 	{
-		return std::vector<float>(-1);
+		std::vector<sf::Vector2f> returnVector;
+		returnVector.push_back(sf::Vector2f(-1, -1));
+		return returnVector;
 	}
 
 	float u = 1;
